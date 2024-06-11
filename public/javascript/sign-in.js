@@ -103,11 +103,18 @@ async function validateAccount(flag, email, password) {
     }
     
     await fetch(`${BACKEND_IP_PORT}/auth/sign-in`, data) 
-        .then(isAuthenticated => isAuthenticated.json())
-        .then(isAuthenticatedJson => {
-            console.log(`게정 검증결과: ${isAuthenticatedJson.result}`);
-             if(isAuthenticatedJson.result === true) {
+        .then(response => {
+            console.log(`게정 검증결과: ${response.status}`);
+            if (response.status === 200) {
                 flag['flag'] = true;
-             }
+
+                const accessToken = response.headers.get('Authorization');
+                const refreshToken = response.headers.get('RefreshToken');
+
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+            }
         });
+        
+        
 }

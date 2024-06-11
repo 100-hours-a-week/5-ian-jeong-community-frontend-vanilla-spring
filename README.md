@@ -16,7 +16,7 @@ __[🔗 커뮤니티 서비스 데모 영상](https://youtu.be/o1n0EyZVABo)__
 
 ##### Servers
 
-__[🔗 Backend Server - Express](https://github.com/100-hours-a-week/5-ian-jeong-community-backend-express)__  
+__[🔗 Backend Server - Spring](https://github.com/100-hours-a-week/5-ian-jeong-community-backend-spring)__  
 __[🔗 Frontend Server - React](https://github.com/100-hours-a-week/5-ian-jeong-community-front-react)__
 
 <br>
