@@ -18,8 +18,6 @@ signInBtn.addEventListener('click', async (event) => {
         loadingBackground.style.display = 'block';
         signInBtn.disabled = true;
         
-
-
         setTimeout(() => {
             signInBtn.style.backgroundColor = '#8a9f8f';
             signInBtn.disabled = false;
@@ -115,6 +113,4 @@ async function validateAccount(flag, email, password) {
                 localStorage.setItem('refreshToken', refreshToken);
             }
         });
-        
-        
 }

@@ -132,7 +132,7 @@ __"/posts"__ 로 시작하는 요청은 게시글 라우터로 향하게 됩니�
 
 ```javascript
 export const FRONTEND_PORT = 3000;
-export const BACKEND_PORT = 8081;
+export const BACKEND_PORT = 8080;
 
 export const FRONTEND_IP_PORT = `http://localhost:${FRONTEND_PORT}`;
 export const BACKEND_IP_PORT = `http://localhost:${BACKEND_PORT}`;
