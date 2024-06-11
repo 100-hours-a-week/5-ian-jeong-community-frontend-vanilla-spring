@@ -97,9 +97,15 @@ function validateEmailFormat(email) {
 async function validateDuplicateEmail(email, flag) {
     await fetch(`${BACKEND_IP_PORT}/users/email?email=${email}`)
         .then(response => {
-            if(response === 200) {
-                flag['flag'] = response.json().result;
+            if(response.status === 200) {
+                return response.json();
             }
+        })
+        .then(json => {
+            flag['flag'] = json.result;
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
 }
 
@@ -234,9 +240,15 @@ nicknameInput.addEventListener("input", async (event) => {
 async function validateDuplicateNickname(nickname, flag) {
     await fetch(`${BACKEND_IP_PORT}/users/nickname?nickname=${nickname}`)
         .then(response => {
-            if(response === 200) {
-                flag['flag'] = response.json().result;
+            if(response.status === 200) {
+                return response.json();
             }
+        })
+        .then(json => {
+            flag['flag'] = json.result;
+        })  
+        .catch(error => {
+            console.error('Error:', error);
         });
 }
 
