@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/posts.css">
+    <title>게시글 목록조회</title>
+</head>
+<body>
+    <header>
+        <div id="title-text">One Day One Post</div>
+        <div id="header-box">
+            <div id="padding"></div>
+            <img id="profile-img" src="" alt="profile-image">
+
+            <div id="drop-down-box">
+
+                <button id="user-edit-btn" class="drop-down">회원정보 수정</button>
+                <button id="password-edit-btn" class="drop-down">비밀번호 수정</button>
+                <button id="logout-btn" class="drop-down" onClick="location.href='/users/sign-in'">로그아웃</button>
+
+            </div>
+        </div>
+    </header>
+
+    
+    
+
+
+
+    <section id="welcome-text-box">
+        <div id="welcome-text">환영합니다,<br>
+            ODOP <strong>커뮤니티</strong> 입니다.
+        </div>
+
+        <div id="noti-box">
+            <div id="noti-text">
+                📢 [공지사항] 인기 게시글 항목이 추가되었습니다 !
+            </div>
+        </div>
+    </section>
+
+    
+    
+
+    
+    <div id="posts-box">
+        
+        
+        <div id="left-post-box">
+            <div id="left-post-box-bar">
+                <button id="add-btn" onClick="location.href='/posts/new'">게시글 작성</button>
+
+            </div>
+
+            <div id="left-post-box-content">
+
+            </div>
+        </div>
+
+
+
+        <div id="right-post-box">
+            <div id="right-post-box-bar">
+                <div id="right-post-box-bar-title">🔥 인기 게시글 🔥</div>
+            </div>
+            <div id="right-post-box-content">
+
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    
+
+    
+    <script type="text/javascript" src="/javascript/posts.js"></script>
+    <script type="text/javascript" src="/javascript/fireworks.js"></script>
+</body>
+</html>

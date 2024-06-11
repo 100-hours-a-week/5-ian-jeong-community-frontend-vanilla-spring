@@ -1,0 +1,412 @@
+@font-face {
+    font-family: 'Dongle';
+    src: url('/css/Dongle/Dongle-Regular.ttf') format('truetype'); /* 폰트 파일의 경로를 지정합니다. */
+    font-style: normal;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: 'Dongle';
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background-image : url('/images/forest.jpg');
+    background-size: cover;    
+}
+
+header {
+    width: 100%;
+    height: 70px;
+    border-bottom: 1px solid #000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #8a9f8f;
+
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#header-box {
+    width: 592px;
+    height: 70px;
+    display: flex;
+    flex-direction: row;
+    align-items:center;
+    justify-content: space-between;
+}
+
+#title-text {
+    font-weight: 400;
+    font-size: 52px;
+    line-height: 32px;
+    position: absolute;
+    color: white;
+}
+
+#back-btn {
+    width: 40px;
+
+    border: none;
+    cursor: pointer;
+
+    transition: transform 0.2s ease;
+}
+
+#back-btn:hover {
+    transform: scale(1.2); 
+}
+
+#profile-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+
+    transition: transform 0.2s ease;
+}
+
+
+#profile-img:hover {
+    transform: scale(1.2); 
+}
+
+
+
+
+
+
+#drop-down-box {
+    position: absolute;
+    margin-left: 477px;
+    margin-top: calc(60px + 9.6vh);
+    width: 115px;
+    height: 105px;
+    border: 1px solid #000;
+    display: flex;
+    flex-direction: column;
+    visibility: hidden;
+    z-index: 1;
+
+    border-radius: 5px;
+}
+
+#user-edit-btn {
+    width: 115px;
+    height: 35px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14.52px;
+    background-color: #D9D9D9;
+    border: none;
+
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+#user-edit-btn:hover {
+    background-color: #E9E9E9;
+}
+
+#password-edit-btn:hover {
+    background-color: #E9E9E9;
+}
+
+#logout-btn:hover {
+    background-color: #E9E9E9;
+}
+
+#password-edit-btn {
+    width: 115px;
+    height: 35px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14.52px;
+    background-color: #D9D9D9;
+    border: none;
+}
+
+#logout-btn {
+    width: 115px;
+    height: 35px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14.52px;
+    background-color: #D9D9D9;
+    border: none;
+
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+
+
+
+
+
+
+
+
+#edit-post-box {
+    width: 100%;
+    height: 100%;
+
+    background-color:rgb(242, 239, 234);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    gap: 20px; 
+}   
+
+
+#preview-box {
+    width: 592px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#preview-box-title-box {
+    margin-top: 40px;
+}
+
+#preview-box-title {
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 31.2px;
+}
+
+#post-preview {
+    margin-top: 85px;
+    width: 544px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+
+
+    outline: none;
+    border-radius: 20px;
+    box-shadow: inset 7px 2px 10px #babebc, inset -5px -5px 12px #fff;
+
+    overflow-y: auto;
+}
+
+#post-preview-title {
+    font-weight: 700;
+    font-size: 40px;
+    border-bottom: 1px solid #817f7f;
+}
+
+#post-preview-image {
+    margin-top: 15px;
+
+    width: 544px;
+}
+
+#post-preview-content {
+    margin-top: 15px;
+    font-size: 20px;
+    line-height: 15px;
+    word-break: break-all;
+}
+
+
+
+
+
+
+
+
+form {
+    width: 592px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#page-title {
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 31.2px;
+    margin-top: 40px;
+}
+
+
+#title-edit-box {
+    width: 592px;
+    margin-top: 51px;
+}
+
+#title-edit-text {
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 20.8px;
+    margin-left: 24px;
+}
+
+#title-input {
+    margin: 0;
+    height: 16px;
+    padding: 24px;
+    width: 544px;
+    border:none;
+    background-color: #F4F5F7;;
+    margin-top: 1.4vh;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 22.56px;
+    border-top: 1px solid rgba(0, 0, 0, 0.16);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.16);
+
+    outline: none;
+    border-radius: 20px;
+    box-shadow: inset 7px 2px 10px #babebc, inset -5px -5px 12px #fff;
+}
+
+
+
+
+
+
+
+
+#post-edit-box {
+    margin-top: 2.4vh;
+    width: 592px;
+}
+
+#post-edit-text {
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 20.8px;
+    margin-left: 24px;
+}
+
+
+
+#post-input {
+    margin-top: 1.4vh;
+    padding: 24px;
+    resize: none;
+    width: 544px;
+    height: 231px;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 21.15px;
+    letter-spacing: -1px;
+    border: none;
+    background-color: #F4F5F7;
+    border-top: 1px solid rgba(0, 0, 0, 0.16);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.16);
+
+    outline: none;
+    border-radius: 20px;
+    box-shadow: inset 7px 2px 10px #babebc, inset -5px -5px 12px #fff;
+}
+
+#helper-text {
+    font-family: initial;
+    color: #FF0000;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 14.52px;
+    margin-left: 24px;
+    visibility: hidden;
+}
+
+
+
+
+
+#image-selection-box {
+    width: 592px;
+    margin-top: 0.8vh;
+}
+
+#image-selection-text {
+    width: 39px;
+    height: 18px;
+    font-weight: 700;
+    font-size: 25px;
+    line-height: 17.9px;
+    margin-left: 24px;
+    margin-bottom: 0.7vh;
+}
+
+#image-selection {
+    margin-top: 0.7vh;
+    margin-left: 24px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16.71px;
+    display: none;
+}
+
+#image-label {
+    padding: 5px;
+
+    margin-top: 0.7vh;
+    margin-left: 24px;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 16.71px;
+
+    border-radius: 4px;
+    border: 1px solid #000000;
+
+    background-color: #D9D9D9;
+}
+
+#image-label-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#image-label:hover {
+    background-color: #BDBDBD;
+}
+
+#file-name {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 16.71px;
+    margin-left: 12px;
+    margin-top: 10px;
+}
+
+#image {
+    display: none;
+}
+
+#edit-btn {
+    margin-top: 3vh;
+    width: 355px;
+    height: 33px;
+    background-color: #409344;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 16.71px;
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+
+
