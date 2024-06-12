@@ -103,14 +103,16 @@ async function validateAccount(flag, email, password) {
     await fetch(`${BACKEND_IP_PORT}/auth/sign-in`, data) 
         .then(response => {
             console.log(`게정 검증결과: ${response.status}`);
-            if (response.status === 200) {
-                flag['flag'] = true;
-
+            if (response.status === 200) {    
                 const accessToken = response.headers.get('Authorization');
                 const refreshToken = response.headers.get('RefreshToken');
-
+                
+                flag['flag'] = true;
                 localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
 }

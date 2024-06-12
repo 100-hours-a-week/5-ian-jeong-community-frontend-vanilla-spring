@@ -4,6 +4,8 @@ const profileImg = document.getElementById("profile-img");
 const dropBox = document.getElementById("drop-down-box");
 const userEditBtn = document.getElementById('user-edit-btn');
 const passwordEditBtn = document.getElementById('password-edit-btn');
+const accessToken = localStorage.getItem("accessToken");
+const refreshToken = localStorage.getItem("refreshToken");
 
 
 init();
@@ -17,8 +19,8 @@ async function init() {
         id: 0
     }
 
-    await getUserIdFromSession(result);
-    userId = result.id;
+    await validateJwt(result); 
+    userId = result.id; 
         
     userEditBtn.addEventListener('click', (event) => {
         window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
@@ -42,17 +44,42 @@ async function init() {
     });
 
 
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`) 
-        .then(userData => userData.json())
-        .then(userJson => {
-            profileImg.src = userJson.result.image;
-        });
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if(response.status === 200)
+            return response.json();
+    })
+    .then(userJson => {
+        profileImg.src = userJson.result.image;
+    });
 
-    await fetch(`${BACKEND_IP_PORT}/posts`)
-        .then(postsData => postsData.json())
-        .then(postsJson => {
+
+
+
+
+
+
+    await fetch(`${BACKEND_IP_PORT}/posts`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if(response.status === 200) {
+            return response.json();
+        }
+    })
+    .then(postsJson => {
             const temp = postsJson.result.slice();
-            const topPosts = postsJson.result.sort((a, b) => b.view_count - a.view_count).slice(0, 3);
+            const topPosts = postsJson.result.sort((a, b) => b.viewCount - a.viewCount).slice(0, 3);
             
             temp.forEach(post => {
                 const postBox = document.createElement('div');
@@ -99,18 +126,24 @@ async function init() {
                     postTitle.textContent = post.title;
                 }
 
-                like.textContent = `좋아요 ${makeShortNumber(post.like_count)}`;
-                comment.textContent = `댓글 ${makeShortNumber(post.comment_count)}`;
-                hits.textContent = `조회수 ${makeShortNumber(post.view_count)}`;
+                like.textContent = `좋아요 ${makeShortNumber(post.likeCount)}`;
+                comment.textContent = `댓글 ${makeShortNumber(post.commentCount)}`;
+                hits.textContent = `조회수 ${makeShortNumber(post.viewCount)}`;
 
-                time.textContent = post.created_at;
-                    
-                fetch(`${BACKEND_IP_PORT}/users/${post.user_id}}`)
-                    .then(userData => userData.json())
-                    .then(userJson => {
-                            profileImage.src = userJson.result.image;
-                            writer.textContent = userJson.result.nickname;
-                        })
+                time.textContent = post.createdAt;
+                
+                fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': accessToken,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(userJson => {
+                    profileImage.src = userJson.result.image;
+                    writer.textContent = userJson.result.nickname;
+                })
 
                 postLogBox.appendChild(like);
                 postLogBox.appendChild(comment);
@@ -127,7 +160,6 @@ async function init() {
                 postBox.appendChild(line);
                 postBox.appendChild(downPost);
                     
-                // document.body.appendChild(postBox);
                 document.getElementById("left-post-box-content").appendChild(postBox);
 
                 postBox.addEventListener('click', () => {
@@ -180,18 +212,24 @@ async function init() {
                     postTitle.textContent = post.title;
                 }
     
-                like.textContent = `좋아요 ${makeShortNumber(post.like_count)}`;
-                comment.textContent = `댓글 ${makeShortNumber(post.comment_count)}`;
-                hits.textContent = `조회수 ${makeShortNumber(post.view_count)}`;
+                like.textContent = `좋아요 ${makeShortNumber(post.likeCount)}`;
+                comment.textContent = `댓글 ${makeShortNumber(post.commentCount)}`;
+                hits.textContent = `조회수 ${makeShortNumber(post.viewCount)}`;
     
-                time.textContent = post.created_at;
+                time.textContent = post.createdAt;
                     
-                fetch(`${BACKEND_IP_PORT}/users/${post.user_id}`)
-                    .then(userData => userData.json())
-                    .then(userJson => {
-                        profileImage.src = userJson.result.image;
-                        writer.textContent = userJson.result.nickname;
-                    });
+                fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, {
+                    method: 'GET',
+                    headers: {
+                    'Authorization': accessToken,
+                    'Content-Type': 'application/json'
+                    }
+                })
+                .then(userData => userData.json())
+                .then(userJson => {
+                    profileImage.src = userJson.result.image;
+                    writer.textContent = userJson.result.nickname;
+                });
     
                 postLogBox.appendChild(like);
                 postLogBox.appendChild(comment);
@@ -228,16 +266,61 @@ function makeShortNumber(number) {
 }
 
 
-async function getUserIdFromSession(result) {
+async function validateJwt(result) {
 
-    await fetch(`${BACKEND_IP_PORT}/users/session`, {credentials: 'include'})
-        .then(response => response.json())
-        .then(json => {
-            if (parseInt(json.result) !== 0) {
-                result.id = json.result;
-            } else {
-                alert('로그아웃 되었습니다 !');
-                window.location.href = `/users/sign-in`;
-            }
-        });
+    const headers = new Headers();
+    headers.append('Authorization', accessToken);
+    headers.append('Content-Type', 'application/json');
+
+    await fetch(`${BACKEND_IP_PORT}/auth`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: headers
+    })
+    .then(async (response) => {
+        if(response.status !== 200) { 
+            const headers = new Headers();
+            headers.append('Authorization', refreshToken);
+            headers.append('Content-Type', 'application/json');
+
+            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: headers
+            })
+            
+            .then(async(response) => {
+                if (response.status === 200) {    
+                    const newAccessToken = response.headers.get('Authorization');
+                    const newRefreshToken = response.headers.get('RefreshToken');
+                    
+                    localStorage.setItem('accessToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
+                        method: 'GET',
+                            headers: {
+                            'Authorization': newAccessToken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                } else {
+                    alert('로그아웃 되었습니다 !');
+                    window.location.href = `/users/sign-in`;
+                }
+                
+            })            
+        } else {
+            return response.json();
+        }
+    })
+    .then(json => {
+        result.id = json.result;
+    })
+    .catch(error => {
+        console.log(error);
+    });
 }

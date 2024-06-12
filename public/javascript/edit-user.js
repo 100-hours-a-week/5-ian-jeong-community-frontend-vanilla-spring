@@ -25,6 +25,9 @@ const modal = document.getElementById("modal");
 const modalCancel = document.getElementById("modal-cancel");
 const modalDelete = document.getElementById("modal-delete");
 
+const accessToken = localStorage.getItem("accessToken");
+const refreshToken = localStorage.getItem("refreshToken");
+
 let originNickname;
 let isCorrectNickname = false;
 
@@ -39,7 +42,7 @@ async function init() {
         id: 0
     }
 
-    await getUserIdFromSession(result);
+    await validateJwt(result); 
     userId = result.id;
 
     profileImg.addEventListener("click", () => {
@@ -63,15 +66,21 @@ async function init() {
         window.location.href=`/users/${userId}/password`;
     });
 
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`)
-        .then(userData => userData.json())
-        .then(userJson => {
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(userData => userData.json())
+    .then(userJson => {
             email.textContent = userJson.result.email;
             originNickname = userJson.result.nickname;
             profileImg.src = userJson.result.image;
             preview.src = userJson.result.image;
             nicknameInput.value = userJson.result.nickname;
-        });
+    });
     
 
 
@@ -146,6 +155,7 @@ async function init() {
                 const data = {
                     method: 'PATCH',
                     headers: {
+                        'Authorization': accessToken,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(obj)
@@ -201,37 +211,89 @@ async function init() {
     modalDelete.addEventListener('click', async (event) => {
         event.preventDefault()
         
-        await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {method: 'DELETE', credentials: 'include'})
-        .then(response => {
-            if (response.status === 204) {
-                alert('회원탈퇴 되었습니다 !');
-                window.close(); 
-                window.opener.location.replace('/users/sign-in');
-            } else {
-                alert('회원탈퇴 실패!');
-                window.location.href = `/users/${userId}`;
+        await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
+            method: 'DELETE', 
+            credentials: 'include', 
+            headers: {
+                'Authorization': accessToken,
+                'Content-Type': 'application/json'
+            }})
+            .then(response => {
+                if (response.status === 204) {
+                    alert('회원탈퇴 되었습니다 !');
+                    window.close(); 
+                    window.opener.location.replace('/users/sign-in');
+                } else {
+                    alert('회원탈퇴 실패!');
+                    window.location.href = `/users/${userId}`;
 
-            }
-        });
+                }
+            });
         
+        });
+}
+
+
+
+async function validateJwt(result) {
+
+    const headers = new Headers();
+    headers.append('Authorization', accessToken);
+    headers.append('Content-Type', 'application/json');
+
+    await fetch(`${BACKEND_IP_PORT}/auth`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: headers
+    })
+    .then(async (response) => {
+        if(response.status !== 200) { 
+            const headers = new Headers();
+            headers.append('Authorization', refreshToken);
+            headers.append('Content-Type', 'application/json');
+
+            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: headers
+            })
+            
+            .then(async(response) => {
+                if (response.status === 200) {    
+                    const newAccessToken = response.headers.get('Authorization');
+                    const newRefreshToken = response.headers.get('RefreshToken');
+                    
+                    localStorage.setItem('accessToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
+                        method: 'GET',
+                            headers: {
+                            'Authorization': newAccessToken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                } else {
+                    alert('로그아웃 되었습니다 !');
+                    window.location.href = `/users/sign-in`;
+                }
+                
+            })            
+        } else {
+            return response.json();
+        }
+    })
+    .then(json => {
+        result.id = json.result;
+    })
+    .catch(error => {
+        console.log(error);
     });
 }
 
-
-
-async function getUserIdFromSession(result) {
-
-    await fetch(`${BACKEND_IP_PORT}/users/session`, {credentials: 'include'})
-        .then(response => response.json())
-        .then(user => {
-            if (parseInt(user.result) !== 0) {
-                result.id = user.result;
-            } else {
-                alert('로그아웃 되었습니다 !');
-                window.location.href = `/users/sign-in`;
-            }
-        });
-}
 
 
 function addImage(event) {

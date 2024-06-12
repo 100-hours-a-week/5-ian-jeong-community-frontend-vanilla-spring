@@ -33,6 +33,9 @@ const commentModalDelete = document.getElementById("comment-modal-delete");
 const commentInput = document.getElementById("comment-input"); 
 const addCommentBtn = document.getElementById("add-comment-btn");
 
+const accessToken = localStorage.getItem("accessToken");
+const refreshToken = localStorage.getItem("refreshToken");
+
 
 
 
@@ -46,7 +49,7 @@ async function init() {
         id: 0
     }
 
-    await getUserIdFromSession(result);
+    await validateJwt(result); 
     userId = result.id;
 
     profileImg.addEventListener("click", () => {
@@ -70,11 +73,17 @@ async function init() {
     });
     
     
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`)
-        .then(userData => userData.json())
-        .then(userJson => {
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(userData => userData.json())
+    .then(userJson => {
             profileImg.src = userJson.result.image;
-        });
+    });
     
 
     editBtn.addEventListener('click', (event) => {
@@ -104,13 +113,27 @@ async function init() {
 
 
 
-    await fetch(`${BACKEND_IP_PORT}/posts/${postId}`) 
-        .then(postData => postData.json()) 
-        .then(async (postJson) => {
+    await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    }) 
+    .then(postData => postData.json()) 
+    .then(async (postJson) => {
+        console.log(postJson)
             postTitle.textContent = postJson.post.title;
-            await fetch(`${BACKEND_IP_PORT}/users/${postJson.post.user_id}`) 
-                .then(userData => userData.json())
-                .then(userJson => {
+
+            await fetch(`${BACKEND_IP_PORT}/users/${postJson.post.userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': accessToken,
+                    'Content-Type': 'application/json'
+                }
+            }) 
+            .then(userData => userData.json())
+            .then(userJson => {
                     if (parseInt(userId) !== parseInt(userJson.result.id)) {
                         editBtn.style.visibility = 'hidden';
                         deleteBtn.style.visibility = 'hidden';
@@ -120,15 +143,15 @@ async function init() {
                     postProfileImg.src = userJson.result.image;
                 });
             
-            time.textContent = postJson.post.created_at;
+            time.textContent = postJson.post.createdAt;
             
             if (postJson.post.imageName == "") {
                 postImage.style.display = "none";
             } 
             postImage.src = postJson.post.image;
             postText.textContent = postJson.post.content;
-            hitsNum.textContent = makeShortNumber(parseInt(postJson.post.view_count));
-            commentsNum.textContent = makeShortNumber(parseInt(postJson.post.comment_count));
+            hitsNum.textContent = makeShortNumber(parseInt(postJson.post.viewCount));
+            commentsNum.textContent = makeShortNumber(parseInt(postJson.post.commentCount));
 
             postJson.comments.forEach(comment => {
 
@@ -151,7 +174,7 @@ async function init() {
                                 
                 const writerInfoTimeDiv = document.createElement('div');
                 writerInfoTimeDiv.classList.add('writer-info-time');
-                writerInfoTimeDiv.textContent = comment.created_at;
+                writerInfoTimeDiv.textContent = comment.createdAt;
                         
                 const contentInput = document.createElement('div');
                 contentInput.classList.add('content-info');
@@ -170,9 +193,15 @@ async function init() {
                 writerDeleteBtn.classList.add('writer-delete-btn');
                 writerDeleteBtn.textContent = '삭제';
                         
-                fetch(`${BACKEND_IP_PORT}/users/${comment.user_id}`) // 댓글 작성자 데이터 가져오기
-                    .then(userData => userData.json())
-                    .then(userJson => {
+                fetch(`${BACKEND_IP_PORT}/users/${comment.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': accessToken,
+                        'Content-Type': 'application/json'
+                    }
+                }) 
+                .then(userData => userData.json())
+                .then(userJson => {
                         if (parseInt(userJson.result.id) !== parseInt(userId)) {
                             writerEditBtn.style.visibility = 'hidden';
                             writerDeleteBtn.style.visibility = 'hidden';
@@ -243,12 +272,13 @@ async function init() {
     addCommentBtn.addEventListener('click', async (event) => { 
         if (addCommentBtn.textContent === "댓글 수정") {
             const obj = {
-                text : `${commentInput.value}`
+                content : `${commentInput.value}`
             }
         
             const data = {
                 method: 'PATCH',
                 headers: {
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(obj)
@@ -270,14 +300,14 @@ async function init() {
         
         } else {
             const obj = {
-                postId : postId,
-                writer : userId,
-                text : commentInput.value
+                userId : userId,
+                content : commentInput.value
             }
         
             const data = {
                 method: 'POST',
                 headers: {
+                'Authorization': accessToken,
                 'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(obj)
@@ -445,19 +475,66 @@ async function init() {
 
 
 
-async function getUserIdFromSession(result) {
+async function validateJwt(result) {
 
-    await fetch(`${BACKEND_IP_PORT}/users/session`, {credentials: 'include'})
-        .then(response => response.json())
-        .then(user => {
-            if (parseInt(user.result) !== 0) {
-                result.id = user.result;
-            } else {
-                alert('로그아웃 되었습니다 !');
-                window.location.href = `/users/sign-in`;
-            }
-        });
+    const headers = new Headers();
+    headers.append('Authorization', accessToken);
+    headers.append('Content-Type', 'application/json');
+
+    await fetch(`${BACKEND_IP_PORT}/auth`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: headers
+    })
+    .then(async (response) => {
+        if(response.status !== 200) { 
+            const headers = new Headers();
+            headers.append('Authorization', refreshToken);
+            headers.append('Content-Type', 'application/json');
+
+            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: headers
+            })
+            
+            .then(async(response) => {
+                if (response.status === 200) {    
+                    const newAccessToken = response.headers.get('Authorization');
+                    const newRefreshToken = response.headers.get('RefreshToken');
+                    
+                    localStorage.setItem('accessToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
+                        method: 'GET',
+                            headers: {
+                            'Authorization': newAccessToken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                } else {
+                    alert('로그아웃 되었습니다 !');
+                    window.location.href = `/users/sign-in`;
+                }
+                
+            })            
+        } else {
+            return response.json();
+        }
+    })
+    .then(json => {
+        result.id = json.result;
+    })
+    .catch(error => {
+        console.log(error);
+    });
 }
+
+
 
 function makeShortNumber(number) { 
     if (number >= 1000) {

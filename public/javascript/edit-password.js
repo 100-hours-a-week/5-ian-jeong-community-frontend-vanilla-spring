@@ -13,6 +13,9 @@ const rePasswordHelper = document.getElementById("re-password-helper-text");
 const editBtn = document.getElementById("edit-btn");
 const editCompleteBtn = document.getElementById("edit-complete-btn");
 
+const accessToken = localStorage.getItem("accessToken");
+const refreshToken = localStorage.getItem("refreshToken");
+
 let isCorrectPassword = false;
 let isCorrectRePassword = false;
 
@@ -27,7 +30,7 @@ async function init() {
         id: 0
     }
 
-    await getUserIdFromSession(result);
+    await validateJwt(result); 
     userId = result.id;
 
     profileImg.addEventListener("click", () => {
@@ -52,11 +55,17 @@ async function init() {
     });
 
 
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`)
-        .then(userData => userData.json())
-        .then(userJson => {
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(userData => userData.json())
+    .then(userJson => {
             profileImg.src = userJson.result.image;
-        });
+    });
 
 
 
@@ -133,6 +142,7 @@ async function init() {
                 const data = {
                     method: 'PATCH',
                     headers: {
+                        'Authorization': accessToken,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(obj)
@@ -162,19 +172,67 @@ async function init() {
 
 
 
-async function getUserIdFromSession(result) {
+async function validateJwt(result) {
 
-    await fetch(`${BACKEND_IP_PORT}/users/session`, {credentials: 'include'})
-        .then(response => response.json())
-        .then(user => {
-            if (parseInt(user.result) !== 0) {
-                result.id = user.result;
-            } else {
-                alert('로그아웃 되었습니다 !');
-                window.location.href = `/users/sign-in`;
-            }
-        });
+    const headers = new Headers();
+    headers.append('Authorization', accessToken);
+    headers.append('Content-Type', 'application/json');
+
+    await fetch(`${BACKEND_IP_PORT}/auth`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: headers
+    })
+    .then(async (response) => {
+        if(response.status !== 200) { 
+            const headers = new Headers();
+            headers.append('Authorization', refreshToken);
+            headers.append('Content-Type', 'application/json');
+
+            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: headers
+            })
+            
+            .then(async(response) => {
+                if (response.status === 200) {    
+                    const newAccessToken = response.headers.get('Authorization');
+                    const newRefreshToken = response.headers.get('RefreshToken');
+                    
+                    localStorage.setItem('accessToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
+                        method: 'GET',
+                            headers: {
+                            'Authorization': newAccessToken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                } else {
+                    alert('로그아웃 되었습니다 !');
+                    window.location.href = `/users/sign-in`;
+                }
+                
+            })            
+        } else {
+            return response.json();
+        }
+    })
+    .then(json => {
+        result.id = json.result;
+    })
+    .catch(error => {
+        console.log(error);
+    });
 }
+
+
+
 
 
 

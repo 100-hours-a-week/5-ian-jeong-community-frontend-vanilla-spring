@@ -24,6 +24,9 @@ const postPreviewTitle = document.getElementById("post-preview-title");
 const postPreviewImage = document.getElementById("post-preview-image");
 const postPreviewContent = document.getElementById("post-preview-content");
 
+const accessToken = localStorage.getItem("accessToken");
+const refreshToken = localStorage.getItem("refreshToken");
+
 init();
 
 
@@ -41,7 +44,7 @@ async function init() {
         dropBox.style.visibility = "visible";
     });
 
-    await getUserIdFromSession(result);
+    await validateJwt(result); 
     userId = result.id;
 
     userEditBtn.addEventListener('click', (event) => {
@@ -62,11 +65,17 @@ async function init() {
     });
 
 
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`)
-        .then(userData => userData.json())
-        .then(userJson => {
-            profileImg.src = userJson.result.image;
-        });
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(userData => userData.json())
+    .then(userJson => {
+        profileImg.src = userJson.result.image;
+    });
 
 
     titleInput.addEventListener("input", () => {
@@ -100,11 +109,17 @@ async function init() {
         }
     });
 
-    let userId;
+    let writerId;
 
-    await fetch(`${BACKEND_IP_PORT}/posts/${postId}`)
-        .then(postData => postData.json())
-        .then(postJson => {
+    await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': accessToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(postData => postData.json())
+    .then(postJson => {
             titleInput.value = postJson.post.title;
             postInput.value = postJson.post.content;
             fileName.textContent = postJson.post.imageName;
@@ -114,7 +129,7 @@ async function init() {
             postPreviewContent.textContent = postJson.post.content;
             postPreviewImage.src = postJson.post.image;
 
-            userId = postJson.post.userId;
+            writerId = postJson.post.userId;
     });
 
 
@@ -142,6 +157,7 @@ async function init() {
             const data = {
                 method: 'PATCH',
                 headers: {
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(obj)
@@ -170,19 +186,65 @@ async function init() {
 
 
 
-async function getUserIdFromSession(result) {
+async function validateJwt(result) {
 
-    await fetch(`${BACKEND_IP_PORT}/users/session`, {credentials: 'include'})
-        .then(response => response.json())
-        .then(user => {
-            if (parseInt(user.result) !== 0) {
-                result.id = user.result;
-            } else {
-                alert('로그아웃 되었습니다 !');
-                window.location.href = `/users/sign-in`;
-            }
-        });
+    const headers = new Headers();
+    headers.append('Authorization', accessToken);
+    headers.append('Content-Type', 'application/json');
+
+    await fetch(`${BACKEND_IP_PORT}/auth`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: headers
+    })
+    .then(async (response) => {
+        if(response.status !== 200) { 
+            const headers = new Headers();
+            headers.append('Authorization', refreshToken);
+            headers.append('Content-Type', 'application/json');
+
+            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: headers
+            })
+            
+            .then(async(response) => {
+                if (response.status === 200) {    
+                    const newAccessToken = response.headers.get('Authorization');
+                    const newRefreshToken = response.headers.get('RefreshToken');
+                    
+                    localStorage.setItem('accessToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
+                        method: 'GET',
+                            headers: {
+                            'Authorization': newAccessToken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                } else {
+                    alert('로그아웃 되었습니다 !');
+                    window.location.href = `/users/sign-in`;
+                }
+                
+            })            
+        } else {
+            return response.json();
+        }
+    })
+    .then(json => {
+        result.id = json.result;
+    })
+    .catch(error => {
+        console.log(error);
+    });
 }
+
 
 
 function addImage(event) {
