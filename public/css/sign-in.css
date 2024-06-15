@@ -55,12 +55,13 @@ body {
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* justify-content: center; */
     align-items: center;
 }
 
 
 #form-title {
+    margin-top: 80px;
     font-weight: 700;
     font-size: 52px;
     line-height: 38.19px;
@@ -168,6 +169,36 @@ body {
     box-shadow: inset 1px 1px 2px #babebc, inset -1px -1px 2px #fff;
 }
 
+
+#icon-box {
+    margin-top: 20px;
+
+    width: 200px;
+    height: 60px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content:center;
+    gap: 20px;
+    
+    
+}
+
+.icon {
+    width:40px;
+    height: 40px;
+    padding: 5px;
+
+    background-color: #8a9f8f; 
+    border-radius: 25%;
+    box-shadow: -8px -8px 16px rgba(0, 0, 0, 0.3), 8px 8px 16px rgba(255, 255, 255, 0.3); 
+    transition: box-shadow 0.3s ease; 
+}
+
+.icon:hover {
+    box-shadow: none; 
+}
 
 
 
