@@ -24,102 +24,110 @@ const postPreviewTitle = document.getElementById("post-preview-title");
 const postPreviewImage = document.getElementById("post-preview-image");
 const postPreviewContent = document.getElementById("post-preview-content");
 
-const accessToken = localStorage.getItem("accessToken");
-const refreshToken = localStorage.getItem("refreshToken");
+const userId = localStorage.getItem("user-id");
+
+
+
+backBtn.addEventListener('click', () => {
+    window.location.href=`/posts/${postId}`;
+}) 
+
+profileImg.addEventListener("click", () => {
+    dropBox.style.visibility = "visible";
+});
+
+userEditBtn.addEventListener('click', (event) => {
+    window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
+});
+
+passwordEditBtn.addEventListener('click', (event) => {
+    window.open(`/users/${userId}/password`, "비밀번호 수정", "width=620,height=600,top=0,left=0");
+})
+
+
+document.addEventListener('click', (event) => {
+    const clickedElement = event.target;
+
+    if (clickedElement !== profileImg) {
+        dropBox.style.visibility = "hidden";
+    }
+});
+
+titleInput.addEventListener("input", () => {
+    const title = titleInput.value;
+    const post = postInput.value;
+    postPreviewTitle.textContent = titleInput.value; 
+
+    if (title.length > 26) {
+        titleInput.value = title.slice(0, 26);
+        postPreviewTitle.textContent = titleInput.value; 
+    }
+
+    if (title && post) {
+        editBtn.style.backgroundColor = '#a3fcb8';
+        helperText.style.visibility = "hidden";
+    } else {
+        editBtn.style.backgroundColor = '#8a9f8f';        
+    }
+});
+
+postInput.addEventListener('input', () => {
+    const title = titleInput.value;
+    const post = postInput.value;
+    postPreviewContent.textContent = postInput.value;
+
+    if (title && post) {
+        editBtn.style.backgroundColor = '#a3fcb8';
+        helperText.style.visibility = "hidden";
+    } else {
+        editBtn.style.backgroundColor = '#8a9f8f';       
+    }
+});
+
+
+
+
+
 
 init();
 
 
 async function init() {
-    var userId = 0;
-    const result = {
-        id: 0
-    }
 
-    backBtn.addEventListener('click', () => {
-        window.location.href=`/posts/${postId}`;
-    }) 
-    
-    profileImg.addEventListener("click", () => {
-        dropBox.style.visibility = "visible";
-    });
-
-    await validateJwt(result); 
-    userId = result.id;
-
-    userEditBtn.addEventListener('click', (event) => {
-        window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
-    });
-
-    passwordEditBtn.addEventListener('click', (event) => {
-        window.open(`/users/${userId}/password`, "비밀번호 수정", "width=620,height=600,top=0,left=0");
-    })
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, createFetchOption('GET'))
+        .then(response => {
+            if (response.status === 401) {
+                alert("로그아웃 되었습니다 !");
+                window.location.href = "/users/sign-in";
+            }
+            
+            if (response.status === 200) {
+                return response.json();
+            }
+        })
+        .then(userJson => {
+            profileImg.src = userJson.result.image;
+        })
+        .catch(error => {
+            console.log(error);
+        })
 
 
-    document.addEventListener('click', (event) => {
-        const clickedElement = event.target;
 
-        if (clickedElement !== profileImg) {
-            dropBox.style.visibility = "hidden";
-        }
-    });
+        let writerId;
 
+    await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, createFetchOption('GET'))
+        .then(response => {
+            if (response.status === 401) {
+                alert("로그아웃 되었습니다 !");
+                window.location.href = "/users/sign-in";
+            }
 
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': accessToken,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(userData => userData.json())
-    .then(userJson => {
-        profileImg.src = userJson.result.image;
-    });
-
-
-    titleInput.addEventListener("input", () => {
-        const title = titleInput.value;
-        const post = postInput.value;
-        postPreviewTitle.textContent = titleInput.value; 
-    
-        if (title.length > 26) {
-            titleInput.value = title.slice(0, 26);
-            postPreviewTitle.textContent = titleInput.value; 
-        }
-
-        if (title && post) {
-            editBtn.style.backgroundColor = '#a3fcb8';
-            helperText.style.visibility = "hidden";
-        } else {
-            editBtn.style.backgroundColor = '#8a9f8f';        
-        }
-    });
-
-    postInput.addEventListener('input', () => {
-        const title = titleInput.value;
-        const post = postInput.value;
-        postPreviewContent.textContent = postInput.value;
-
-        if (title && post) {
-            editBtn.style.backgroundColor = '#a3fcb8';
-            helperText.style.visibility = "hidden";
-        } else {
-            editBtn.style.backgroundColor = '#8a9f8f';       
-        }
-    });
-
-    let writerId;
-
-    await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': accessToken,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(postData => postData.json())
-    .then(postJson => {
+            if (response.status === 200) {
+                return response.json();
+            }
+        })
+        .then(postJson => {
             titleInput.value = postJson.post.title;
             postInput.value = postJson.post.content;
             fileName.textContent = postJson.post.imageName;
@@ -153,97 +161,31 @@ async function init() {
                 imageName: imageName,
                 image: imageUrl,
             }
-                
-            const data = {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': accessToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(obj)
-            }
         
-            await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, data)
+            await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, createFetchOption('PATCH', obj))
                 .then(response => {
-                if (response.status === 204) {
-                    alert('게시글이 수정되었습니다!');
-                    window.location.href = `/posts/${postId}`;
+                    if(response.status === 401) {
+                        alert("로그아웃 되었습니다 !");
+                        window.location.href = "/users/sign-in";
+                    }
 
-                } else {
-                    alert('게시글 수정 실패!');
-                    window.location.href = `/posts/${postId}`;
+                    if (response.status === 204) {
+                        alert('게시글이 수정되었습니다!');
+                        window.location.href = `/posts/${postId}`;
 
-                }
+                    } else {
+                        alert('게시글 수정 실패!');
+                        window.location.href = `/posts/${postId}`;
+
+                    }
               })
               .catch(error => {
                 console.error('fetch error:', error);
-              });
-            
+              });   
         }
     });
 }
 
-
-
-
-async function validateJwt(result) {
-
-    const headers = new Headers();
-    headers.append('Authorization', accessToken);
-    headers.append('Content-Type', 'application/json');
-
-    await fetch(`${BACKEND_IP_PORT}/auth`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: headers
-    })
-    .then(async (response) => {
-        if(response.status !== 200) { 
-            const headers = new Headers();
-            headers.append('Authorization', refreshToken);
-            headers.append('Content-Type', 'application/json');
-
-            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: headers
-            })
-            
-            .then(async(response) => {
-                if (response.status === 200) {    
-                    const newAccessToken = response.headers.get('Authorization');
-                    const newRefreshToken = response.headers.get('RefreshToken');
-                    
-                    localStorage.setItem('accessToken', newAccessToken);
-                    localStorage.setItem('refreshToken', newRefreshToken);
-
-                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
-                        method: 'GET',
-                            headers: {
-                            'Authorization': newAccessToken,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        return response.json();
-                    })
-                } else {
-                    alert('로그아웃 되었습니다 !');
-                    window.location.href = `/users/sign-in`;
-                }
-                
-            })            
-        } else {
-            return response.json();
-        }
-    })
-    .then(json => {
-        result.id = json.result;
-    })
-    .catch(error => {
-        console.log(error);
-    });
-}
 
 
 
@@ -267,4 +209,32 @@ function addImage(event) {
     image.src = "";
     fileName.textContent = "";
 }
+
+function createFetchOption(method, data = null) {
+    let fetchOption;
+
+    if (data === null) {
+        fetchOption = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id' : userId
+            },
+            credentials: 'include',
+        };    
+    } else {
+        fetchOption = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id' : userId
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        };    
+    }
+
+    return fetchOption;
+}
+
     

@@ -18,131 +18,92 @@ const postPreviewTitle = document.getElementById("post-preview-title");
 const postPreviewImage = document.getElementById("post-preview-image");
 const postPreviewContent = document.getElementById("post-preview-content");
 
-const accessToken = localStorage.getItem("accessToken");
-const refreshToken = localStorage.getItem("refreshToken");
+const userId = localStorage.getItem("user-id");
 
 
+backBtn.addEventListener('click', () => {
+    window.location.href=`/posts`;
+}) 
 
-init()
+profileImg.addEventListener("click", () => {
+    dropBox.style.visibility = "visible";
+});
 
+userEditBtn.addEventListener('click', (event) => {
+    window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
+});
 
+passwordEditBtn.addEventListener('click', (event) => {
+    window.open(`/users/${userId}/password`, "비밀번호 수정", "width=620,height=600,top=0,left=0");
+});
 
-async function init() {
-    var userId = 0;
-    const result = {
-        id: 0
+document.addEventListener('click', (event) => {
+    const clickedElement = event.target;
+
+    if (clickedElement !== profileImg) {
+        dropBox.style.visibility = "hidden";
     }
+});
 
-    await validateJwt(result); 
-    userId = result.id;
-
-    backBtn.addEventListener('click', () => {
-        window.location.href=`/posts`;
-    }) 
+titleInput.addEventListener("input", (event) => {
+    const title = titleInput.value;
+    const post = postInput.value;
+    postPreviewTitle.textContent = titleInput.value; 
     
-
-    profileImg.addEventListener("click", () => {
-        dropBox.style.visibility = "visible";
-    });
-
-    userEditBtn.addEventListener('click', (event) => {
-        window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
-    });
-
-    passwordEditBtn.addEventListener('click', (event) => {
-        window.open(`/users/${userId}/password`, "비밀번호 수정", "width=620,height=600,top=0,left=0");
-    });
-
-    document.addEventListener('click', (event) => {
-        const clickedElement = event.target;
-    
-        if (clickedElement !== profileImg) {
-            dropBox.style.visibility = "hidden";
-        }
-    });
-
-
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': accessToken,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(userData => userData.json())
-    .then(userJson => {
-        profileImg.src = userJson.result.image;
-    })
-    
-    
-    titleInput.addEventListener("input", (event) => {
-        const title = titleInput.value;
-        const post = postInput.value;
+    if (title.length > 26) {
+        titleInput.value = title.slice(0, 26);
         postPreviewTitle.textContent = titleInput.value; 
-        
-        if (title.length > 26) {
-            titleInput.value = title.slice(0, 26);
-            postPreviewTitle.textContent = titleInput.value; 
+    }
+    
+    if (title && post) {
+        completeBtn.style.backgroundColor = '#b6d2bd';
+        helperText.style.visibility = "hidden";
+    } else {
+        completeBtn.style.backgroundColor = '#8a9f8f';        
+    }
+});
+
+postInput.addEventListener('input', () => {
+    const title = titleInput.value;
+    const post = postInput.value;
+    postPreviewContent.textContent = postInput.value;
+
+    if (title && post) {
+        completeBtn.style.backgroundColor = '#b6d2bd';
+        helperText.style.visibility = "hidden";
+    } else {
+        completeBtn.style.backgroundColor = '#8a9f8f';       
+    }
+});
+
+completeBtn.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const title = titleInput.value;
+    const post = postInput.value;
+    const file = fileInput.value.split('\\').pop();
+    const image = postImage.src;
+
+    if (!title || !post) {
+        helperText.textContent = "*제목, 내용을 모두 작성해주세요.";
+        helperText.style.visibility = "visible";
+
+    } else { 
+        const obj = {
+            userId : userId,
+            title: title,
+            content: post,
+            imageName: file,
+            image: image
         }
-        
-        if (title && post) {
-            completeBtn.style.backgroundColor = '#b6d2bd';
-            helperText.style.visibility = "hidden";
-        } else {
-            completeBtn.style.backgroundColor = '#8a9f8f';        
-        }
-    });
+    
+        await fetch(`${BACKEND_IP_PORT}/posts`, createFetchOption('POST', obj))
+            .then(response => {
+                if (response.status === 401) {
+                    alert("로그아웃 되었습니다 !");
+                    window.location.href = "/users/sign-in";
 
-    postInput.addEventListener('input', () => {
-        const title = titleInput.value;
-        const post = postInput.value;
-        postPreviewContent.textContent = postInput.value;
-
-        if (title && post) {
-            completeBtn.style.backgroundColor = '#b6d2bd';
-            helperText.style.visibility = "hidden";
-        } else {
-            completeBtn.style.backgroundColor = '#8a9f8f';       
-        }
-    });
-
-
-
-
-    completeBtn.addEventListener("click", async (event) => {
-        event.preventDefault();
-
-        const title = titleInput.value;
-        const post = postInput.value;
-        const file = fileInput.value.split('\\').pop();
-        const image = postImage.src;
-
-        if (!title || !post) {
-            helperText.textContent = "*제목, 내용을 모두 작성해주세요.";
-            helperText.style.visibility = "visible";
-
-        } else { 
-            const obj = {
-                userId : userId,
-                title: title,
-                content: post,
-                imageName: file,
-                image: image
-            }
-                
-            const data = {
-                method: 'POST',
-                headers: {
-                    'Authorization': accessToken,
-                    'Content-Type': 'application/json'
-                },
-                
-                body: JSON.stringify(obj)
-            }
-        
-            await fetch(`${BACKEND_IP_PORT}/posts`, data)
-                .then(response => {
-                if (response.status === 201) {
+                } else if (response.status === 201) {
                     alert('게시글이 생성되었습니다!');
                     window.location.href = '/posts';
 
@@ -151,75 +112,36 @@ async function init() {
                     window.location.href = '/posts';
 
                 }
-              })
-              .catch(error => {
-                console.error('fetch error:', error);
-              });
-            
-        }
-    });
-}
-
-
-
-
-async function validateJwt(result) {
-
-    const headers = new Headers();
-    headers.append('Authorization', accessToken);
-    headers.append('Content-Type', 'application/json');
-
-    await fetch(`${BACKEND_IP_PORT}/auth`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: headers
-    })
-    .then(async (response) => {
-        if(response.status !== 200) { 
-            const headers = new Headers();
-            headers.append('Authorization', refreshToken);
-            headers.append('Content-Type', 'application/json');
-
-            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: headers
             })
-            
-            .then(async(response) => {
-                if (response.status === 200) {    
-                    const newAccessToken = response.headers.get('Authorization');
-                    const newRefreshToken = response.headers.get('RefreshToken');
-                    
-                    localStorage.setItem('accessToken', newAccessToken);
-                    localStorage.setItem('refreshToken', newRefreshToken);
+            .catch(error => {
+                console.error('fetch error:', error);
+            });
+    }
+});
 
-                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
-                        method: 'GET',
-                            headers: {
-                            'Authorization': newAccessToken,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        return response.json();
-                    })
-                } else {
-                    alert('로그아웃 되었습니다 !');
-                    window.location.href = `/users/sign-in`;
-                }
-                
-            })            
-        } else {
-            return response.json();
-        }
-    })
-    .then(json => {
-        result.id = json.result;
-    })
-    .catch(error => {
-        console.log(error);
-    });
+
+
+
+init()
+
+async function init() {
+    
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, createFetchOption('GET'))
+        .then(response => {
+            if(response.status === 200) {
+                return response.json();
+            }
+
+            if(response.status === 401) {
+                alert("로그아웃 되었습니다 !");
+                window.location.href = "/users/sign-in";
+            }
+
+        }).then(userJson => {
+            profileImg.src = userJson.result.image;
+        }).catch(error => {
+            console.log(error);
+        });
 }
 
 
@@ -241,6 +163,33 @@ function addImage(event) {
 
     postPreviewImage.src = "";
     document.getElementById("file-input").value = "";
+}
+
+function createFetchOption(method, data = null) {
+    let fetchOption;
+
+    if (data === null) {
+        fetchOption = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id' : userId
+            },
+            credentials: 'include',
+        };    
+    } else {
+        fetchOption = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id' : userId
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        };    
+    }
+
+    return fetchOption;
 }
 
 

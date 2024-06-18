@@ -97,6 +97,7 @@ function validateEmailFormat(email) {
 async function validateDuplicateEmail(email, flag) {
     await fetch(`${BACKEND_IP_PORT}/users/email?email=${email}`)
         .then(response => {
+            console.log(response);
             if(response.status === 200) {
                 return response.json();
             }

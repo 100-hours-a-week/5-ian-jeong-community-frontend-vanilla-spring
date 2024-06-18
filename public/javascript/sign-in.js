@@ -1,4 +1,3 @@
-
 BACKEND_IP_PORT = localStorage.getItem('backend-ip-port');
 
 const form = document.getElementById('sign-in-form');
@@ -8,7 +7,23 @@ const helperText = document.getElementById('helper-text');
 const signInBtn = document.getElementById('sign-in-btn');
 const loading = document.getElementById('loading');
 const loadingBackground = document.getElementById('loading-background');
+const googleIcon = document.getElementById("google-icon");
+const naverIcon = document.getElementById("naver-icon");
+const kakaoIcon = document.getElementById("kakao-icon");
 
+localStorage.removeItem('user-id');
+
+googleIcon.addEventListener('click', (event) => {
+    window.location.href=`${BACKEND_IP_PORT}/oauth2/authorization/google`;
+});
+
+naverIcon.addEventListener('click', (event) => {
+    window.location.href=`${BACKEND_IP_PORT}/oauth2/authorization/naver`;
+});
+
+kakaoIcon.addEventListener('click', (event) => {
+    window.location.href=`${BACKEND_IP_PORT}/oauth2/authorization/kakao`;
+});
 
 signInBtn.addEventListener('click', async (event) => {
     event.preventDefault();
@@ -86,30 +101,28 @@ function validatePasswordFormat(password) {
 }
 
 async function validateAccount(flag, email, password) {
+    console.log('로그인시도!')
     const obj = {
-        email : `${email}`,
+        username : `${email}`,
         password : `${password}`
     }
 
+    const formData = new FormData();
+    Object.entries(obj).forEach(([key, value]) => formData.append(key, value));
+
     const data = {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(obj),
+        body: formData,
         credentials: 'include'
     }
     
-    await fetch(`${BACKEND_IP_PORT}/auth/sign-in`, data) 
+    await fetch(`${BACKEND_IP_PORT}/login`, data) 
         .then(response => {
             console.log(`게정 검증결과: ${response.status}`);
             if (response.status === 200) {    
-                const accessToken = response.headers.get('Authorization');
-                const refreshToken = response.headers.get('RefreshToken');
-                
+                const id = response.headers.get('user-id')
+                localStorage.setItem("user-id", id)
                 flag['flag'] = true;
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
             }
         })
         .catch(error => {

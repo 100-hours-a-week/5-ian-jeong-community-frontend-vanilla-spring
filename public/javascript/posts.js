@@ -1,87 +1,84 @@
-BACKEND_IP_PORT = localStorage.getItem('backend-ip-port');
+
+/**
+ * Variable
+*/
+const BACKEND_IP_PORT = localStorage.getItem('backend-ip-port');
 
 const profileImg = document.getElementById("profile-img");
 const dropBox = document.getElementById("drop-down-box");
 const userEditBtn = document.getElementById('user-edit-btn');
 const passwordEditBtn = document.getElementById('password-edit-btn');
-const accessToken = localStorage.getItem("accessToken");
-const refreshToken = localStorage.getItem("refreshToken");
+
+
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i].trim();
+        // 쿠키 이름과 일치하는 경우
+        if (cookie.startsWith(`${name}=`)) {
+            return cookie.substring(name.length + 1); // 값만 반환
+        }
+    }
+    return null; // 쿠키를 찾지 못한 경우
+}
+
+var userId = localStorage.getItem("user-id");
+
+if(userId === null) {
+    localStorage.setItem("user-id", getCookie('user-id'));
+    userId = localStorage.getItem("user-id");
+}
 
 
 init();
 
 
 
+
 async function init() {
-    var userId = 0;
-
-    const result = {
-        id: 0
-    }
-
-    await validateJwt(result); 
-    userId = result.id; 
-        
-    userEditBtn.addEventListener('click', (event) => {
-        window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
-    });
-
-    passwordEditBtn.addEventListener('click', (event) => {
-        window.open(`/users/${userId}/password`, "비밀번호 수정", "width=620,height=600,top=0,left=0");
-    });
-
-    profileImg.addEventListener("click", () => {
+    
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, createFetchOption('GET'))
+        .then(response => {
+            if(response.status === 401) {
+                alert("로그아웃 되었습니다 !");
+                window.location.href = "/users/sign-in";
+            }
             
-        dropBox.style.visibility = "visible";
-    });
-
-    document.addEventListener('click', (event) => {
-        const clickedElement = event.target;
+            if(response.status !== 200) {
+                console.log(response.status);
+            }
             
-        if (clickedElement !== profileImg) {
-            dropBox.style.visibility = "hidden";
-        }
-    });
+            if(response.status === 200) {
+                return response.json(); // 바디 스트림은 단 한 번만 소비 될 수 있음 => 조심 
+            }
+        })
+        .then(userJson => {
+            profileImg.src = userJson.result.image;
+        })
+        .catch(error => {
+            console.log(error);
+        });
 
+    await fetch(`${BACKEND_IP_PORT}/posts`, createFetchOption('GET'))
+        .then(response => {
+            if(response.status === 401) {
+                alert("로그아웃 되었습니다 !");
+                window.location.href = "/users/sign-in";
+            }
 
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': accessToken,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if(response.status === 200)
-            return response.json();
-    })
-    .then(userJson => {
-        profileImg.src = userJson.result.image;
-    });
+            if(response.status !== 200) {
+                console.log(response.status);
+            }
 
+            if(response.status === 200) {
+                return response.json();
+            }
 
-
-
-
-
-
-    await fetch(`${BACKEND_IP_PORT}/posts`, {
-        method: 'GET',
-        headers: {
-            'Authorization': accessToken,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if(response.status === 200) {
-            return response.json();
-        }
-    })
-    .then(postsJson => {
+        }).then(postsJson => {
             const temp = postsJson.result.slice();
             const topPosts = postsJson.result.sort((a, b) => b.viewCount - a.viewCount).slice(0, 3);
             
-            temp.forEach(post => {
+            temp.forEach(async(post) => {
                 const postBox = document.createElement('div');
                 postBox.classList.add('post-box');
                     
@@ -132,18 +129,12 @@ async function init() {
 
                 time.textContent = post.createdAt;
                 
-                fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': accessToken,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(userJson => {
-                    profileImage.src = userJson.result.image;
-                    writer.textContent = userJson.result.nickname;
-                })
+                await fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
+                    .then(response => response.json())
+                    .then(userJson => {
+                        profileImage.src = userJson.result.image;
+                        writer.textContent = userJson.result.nickname;
+                    })
 
                 postLogBox.appendChild(like);
                 postLogBox.appendChild(comment);
@@ -167,7 +158,7 @@ async function init() {
                 });
             });
 
-            topPosts.forEach(post => {
+            topPosts.forEach(async(post) => {
                 const postBox = document.createElement('div');
                 postBox.classList.add('post-box');
                     
@@ -218,18 +209,28 @@ async function init() {
     
                 time.textContent = post.createdAt;
                     
-                fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, {
-                    method: 'GET',
-                    headers: {
-                    'Authorization': accessToken,
-                    'Content-Type': 'application/json'
-                    }
-                })
-                .then(userData => userData.json())
-                .then(userJson => {
-                    profileImage.src = userJson.result.image;
-                    writer.textContent = userJson.result.nickname;
-                });
+                await fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
+                    .then(response => {
+                        if(response.status === 401) {
+                            alert("로그아웃 되었습니다 !");
+                            window.location.href = "/users/sign-in";
+                        }
+                
+                        if(response.status !== 200) {
+                            console.log(response.status);
+                        }
+                
+                        if(response.status === 200) {
+                            return response.json();
+                        }
+                    })
+                    .then(userJson => {
+                        profileImage.src = userJson.result.image;
+                        writer.textContent = userJson.result.nickname;
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
     
                 postLogBox.appendChild(like);
                 postLogBox.appendChild(comment);
@@ -252,9 +253,63 @@ async function init() {
                     window.location.href = `/posts/${postBox.id}`;
                 });
             });
+        })
+        .catch(error => {
+            console.log(error);
         });
 }
 
+
+
+userEditBtn.addEventListener('click', (event) => {
+    window.open(`/users/${userId}`, "계정 업데이트", "width=620,height=600,top=0,left=0");
+});
+
+passwordEditBtn.addEventListener('click', (event) => {
+    window.open(`/users/${userId}/password`, "비밀번호 수정", "width=620,height=600,top=0,left=0");
+});
+
+profileImg.addEventListener("click", () => {
+    dropBox.style.visibility = "visible";
+});
+
+document.addEventListener('click', (event) => {
+    const clickedElement = event.target;
+        
+    if (clickedElement !== profileImg) {
+        dropBox.style.visibility = "hidden";
+    }
+});
+
+
+
+
+function createFetchOption(method, data = null) {
+    let fetchOption;
+
+    if (data === null) {
+        fetchOption = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id' : userId
+            },
+            credentials: 'include',
+        };    
+    } else {
+        fetchOption = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id' : userId
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        };    
+    }
+
+    return fetchOption;
+}
 
 function makeShortNumber(number) {
     if (number >= 1000) {
@@ -263,64 +318,4 @@ function makeShortNumber(number) {
     } else {
         return number.toString();
     }
-}
-
-
-async function validateJwt(result) {
-
-    const headers = new Headers();
-    headers.append('Authorization', accessToken);
-    headers.append('Content-Type', 'application/json');
-
-    await fetch(`${BACKEND_IP_PORT}/auth`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: headers
-    })
-    .then(async (response) => {
-        if(response.status !== 200) { 
-            const headers = new Headers();
-            headers.append('Authorization', refreshToken);
-            headers.append('Content-Type', 'application/json');
-
-            return await fetch(`${BACKEND_IP_PORT}/auth/refresh-token`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: headers
-            })
-            
-            .then(async(response) => {
-                if (response.status === 200) {    
-                    const newAccessToken = response.headers.get('Authorization');
-                    const newRefreshToken = response.headers.get('RefreshToken');
-                    
-                    localStorage.setItem('accessToken', newAccessToken);
-                    localStorage.setItem('refreshToken', newRefreshToken);
-
-                    return await fetch(`${BACKEND_IP_PORT}/auth`, {
-                        method: 'GET',
-                            headers: {
-                            'Authorization': newAccessToken,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        return response.json();
-                    })
-                } else {
-                    alert('로그아웃 되었습니다 !');
-                    window.location.href = `/users/sign-in`;
-                }
-                
-            })            
-        } else {
-            return response.json();
-        }
-    })
-    .then(json => {
-        result.id = json.result;
-    })
-    .catch(error => {
-        console.log(error);
-    });
 }
