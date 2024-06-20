@@ -25,9 +25,11 @@ function getCookie(name) {
 var userId = localStorage.getItem("user-id");
 
 if(userId === null) {
-    localStorage.setItem("user-id", getCookie('user-id'));
+    localStorage.setItem("user-id", getCookie('user-id')); // oauth유저는 쿠키에 담아서 보내기 때문
     userId = localStorage.getItem("user-id");
 }
+
+
 
 
 init();
