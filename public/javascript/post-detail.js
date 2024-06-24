@@ -289,7 +289,7 @@ async function init() {
                     postProfileImg.src = userJson.result.image;
                 });
             
-            time.textContent = postJson.post.createdAt;
+            time.textContent = postJson.post.createdAt.replace('T', ' ');
             
             if (postJson.post.imageName == "") {
                 postImage.style.display = "none";
@@ -321,7 +321,7 @@ async function init() {
                                 
                 const writerInfoTimeDiv = document.createElement('div');
                 writerInfoTimeDiv.classList.add('writer-info-time');
-                writerInfoTimeDiv.textContent = comment.createdAt;
+                writerInfoTimeDiv.textContent = comment.createdAt.replace('T', ' ');
                         
                 const contentInput = document.createElement('div');
                 contentInput.classList.add('content-info');

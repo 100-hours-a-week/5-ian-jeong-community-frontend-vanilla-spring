@@ -129,7 +129,7 @@ async function init() {
                 comment.textContent = `댓글 ${makeShortNumber(post.commentCount)}`;
                 hits.textContent = `조회수 ${makeShortNumber(post.viewCount)}`;
 
-                time.textContent = post.createdAt;
+                time.textContent = post.createdAt.replace('T', ' ');
                 
                 await fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
                     .then(response => response.json())
@@ -209,7 +209,7 @@ async function init() {
                 comment.textContent = `댓글 ${makeShortNumber(post.commentCount)}`;
                 hits.textContent = `조회수 ${makeShortNumber(post.viewCount)}`;
     
-                time.textContent = post.createdAt;
+                time.textContent = post.createdAt.replace('T', ' ');
                     
                 await fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
                     .then(response => {
