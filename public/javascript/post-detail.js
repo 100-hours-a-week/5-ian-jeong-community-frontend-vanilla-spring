@@ -118,6 +118,7 @@ commentInput.addEventListener('input', (event) => {
 addCommentBtn.addEventListener('click', async (event) => { 
     if (addCommentBtn.textContent === "댓글 수정") {
         const data = {
+            userId : userId,
             content : `${commentInput.value}`
         }
     
