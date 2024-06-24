@@ -29,6 +29,9 @@ jobs:
     - name: Write GLOBAL value to file
       run: echo "${{ secrets.GLOBAL }}" > ./public/javascript/global.js
 
+    - name: Print current directory
+      run: pwd
+
     # Docker 이미지 빌드 및 Docker Hub에 푸시
     - name: Build and push Docker image
       run: |
