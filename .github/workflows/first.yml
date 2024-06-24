@@ -25,6 +25,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      
+    - name: Write GLOBAL value to file
+      run: echo "${{ secrets.GLOBAL }}" > public/globals.js
 
     # Docker 이미지 빌드 및 Docker Hub에 푸시
     - name: Build and push Docker image
