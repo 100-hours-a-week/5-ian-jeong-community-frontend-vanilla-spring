@@ -70,7 +70,6 @@ async function init() {
 
             if(response.status !== 200) {
                 console.log(response.status);
-                return response.json();
             }
 
             if(response.status === 200) {
