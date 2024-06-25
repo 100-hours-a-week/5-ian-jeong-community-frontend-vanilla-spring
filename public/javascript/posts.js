@@ -76,11 +76,11 @@ async function init() {
                 return response.json();
             }
 
-        }).then(postsJson => {
+        }).then(async(postsJson) => {
             const temp = postsJson.result.slice();
             const topPosts = postsJson.result.sort((a, b) => b.viewCount - a.viewCount).slice(0, 3);
             
-            temp.forEach(async(post) => {
+            await temp.forEach(async(post) => {
                 const postBox = document.createElement('div');
                 postBox.classList.add('post-box');
                     
@@ -160,7 +160,7 @@ async function init() {
                 });
             });
 
-            topPosts.forEach(async(post) => {
+            await topPosts.forEach(async(post) => {
                 const postBox = document.createElement('div');
                 postBox.classList.add('post-box');
                     
