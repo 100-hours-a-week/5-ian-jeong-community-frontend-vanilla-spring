@@ -23,9 +23,7 @@ function allDelCookies (domain, path) {
     console.log(cookies);
     const expiration = 'Sat, 01 Jan 1972 00:00:00 GMT';
   
-    // 반목문 순회하면서 쿠키 전체 삭제
     if (!document.cookie) {
-      alert('삭제할 쿠키가 없습니다.');
     } else {
       for (i = 0; i < cookies.length; i++) {
         // const uname = cookies[i].split('=')[0];
@@ -33,7 +31,6 @@ function allDelCookies (domain, path) {
         document.cookie = cookies[i].split('=')[0] + '=; expires=' + expiration;
         // document.cookie = cookies[i].split('=')[0] + '=; expires=' + expiration + '; domain =' + domain;
       }
-      alert('쿠키 전부 삭제완료!!');
     }
   };
 
