@@ -12,27 +12,9 @@ const naverIcon = document.getElementById("naver-icon");
 const kakaoIcon = document.getElementById("kakao-icon");
 
 localStorage.removeItem('user-id');
-allDelCookies();
+document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-function allDelCookies (domain, path) {
-    // const doc = document;
-    domain = domain || document.domain;
-    path = path || '/';
-  
-    const cookies = document.cookie.split('; '); // 배열로 반환
-    console.log(cookies);
-    const expiration = 'Sat, 01 Jan 1972 00:00:00 GMT';
-  
-    if (!document.cookie) {
-    } else {
-      for (i = 0; i < cookies.length; i++) {
-        // const uname = cookies[i].split('=')[0];
-        // document.cookie = `${uname}=; expires=${expiration}`;
-        document.cookie = cookies[i].split('=')[0] + '=; expires=' + expiration;
-        // document.cookie = cookies[i].split('=')[0] + '=; expires=' + expiration + '; domain =' + domain;
-      }
-    }
-  };
+
 
 
 googleIcon.addEventListener('click', (event) => {
