@@ -131,7 +131,7 @@ async function init() {
 
                 time.textContent = post.createdAt.replace('T', ' ');
                 
-                await fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
+                fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
                     .then(response => response.json())
                     .then(userJson => {
                         profileImage.src = userJson.result.image;
