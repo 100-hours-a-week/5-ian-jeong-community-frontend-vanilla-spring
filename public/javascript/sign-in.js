@@ -12,7 +12,7 @@ const naverIcon = document.getElementById("naver-icon");
 const kakaoIcon = document.getElementById("kakao-icon");
 
 localStorage.removeItem('user-id');
-document.cookie = 'Authorization=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + "http://ec2-15-165-77-151.ap-northeast-2.compute.amazonaws.com:3000" + "; path=/;";
 
 googleIcon.addEventListener('click', (event) => {
     window.location.href=`${BACKEND_IP_PORT}/oauth2/authorization/google`;
