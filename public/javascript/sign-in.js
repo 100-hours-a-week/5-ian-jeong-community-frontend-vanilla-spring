@@ -12,7 +12,31 @@ const naverIcon = document.getElementById("naver-icon");
 const kakaoIcon = document.getElementById("kakao-icon");
 
 localStorage.removeItem('user-id');
-document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + "http://ec2-15-165-77-151.ap-northeast-2.compute.amazonaws.com" + "; path=/;";
+allDelCookies();
+
+function allDelCookies (domain, path) {
+    // const doc = document;
+    domain = domain || document.domain;
+    path = path || '/';
+  
+    const cookies = document.cookie.split('; '); // 배열로 반환
+    console.log(cookies);
+    const expiration = 'Sat, 01 Jan 1972 00:00:00 GMT';
+  
+    // 반목문 순회하면서 쿠키 전체 삭제
+    if (!document.cookie) {
+      alert('삭제할 쿠키가 없습니다.');
+    } else {
+      for (i = 0; i < cookies.length; i++) {
+        // const uname = cookies[i].split('=')[0];
+        // document.cookie = `${uname}=; expires=${expiration}`;
+        document.cookie = cookies[i].split('=')[0] + '=; expires=' + expiration;
+        // document.cookie = cookies[i].split('=')[0] + '=; expires=' + expiration + '; domain =' + domain;
+      }
+      alert('쿠키 전부 삭제완료!!');
+    }
+  };
+
 
 googleIcon.addEventListener('click', (event) => {
     window.location.href=`${BACKEND_IP_PORT}/oauth2/authorization/google`;
