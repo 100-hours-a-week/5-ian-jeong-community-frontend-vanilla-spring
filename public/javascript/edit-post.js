@@ -147,22 +147,35 @@ async function init() {
         const title = titleInput.value;
         const post = postInput.value;
         const imageName = fileName.textContent;
-        const imageUrl = image.src;
 
         if (!title || !post) {
             helperText.textContent = "*제목, 내용을 모두 작성해주세요.";
             helperText.style.visibility = "visible";
 
         } else { 
-            const obj = {
-                userId: userId,
-                title: title,
-                content: post,
-                imageName: imageName,
-                image: imageUrl,
+
+            const formData = new FormData();
+            formData.append('userId', userId);
+            formData.append('title', title);
+            formData.append('content', post);
+            formData.append('imageName', imageName);
+
+            if (imageInput.files.length > 0) {
+                formData.append('post-image', imageInput.files[0]);
+            } else {
+                formData.append('post-image', null); 
+            }
+
+            const data = {
+                method: 'PATCH',
+                headers: {
+                    'user-id' : userId
+                },
+                body: formData,
+                credentials: 'include',
             }
         
-            await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, createFetchOption('PATCH', obj))
+            await fetch(`${BACKEND_IP_PORT}/posts/${postId}`, data)
                 .then(response => {
                     if(response.status === 401) {
                         alert("로그아웃 되었습니다 !");

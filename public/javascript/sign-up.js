@@ -1,6 +1,7 @@
 BACKEND_IP_PORT = localStorage.getItem('backend-ip-port');
 
 const form = document.getElementById("sign-up-form");
+const profileInput = document.getElementById("profile-circle");
 const preview = document.getElementById("preview");
 
 const emailInput = document.getElementById("email-input");
@@ -271,19 +272,20 @@ function validateAll() {
 signUpBtn.addEventListener('click', async (event) => {
     event.preventDefault();
     
-    const obj = {
-        email : `${emailInput.value}`,
-        password: `${passwordInput.value}`,
-        nickname: `${nicknameInput.value}`,
-        image: `${preview.src}`
+    const formData = new FormData();
+    formData.append('email', emailInput.value);
+    formData.append('password', passwordInput.value);
+    formData.append('nickname', nicknameInput.value);
+
+    if (profileInput.files.length > 0) {
+        formData.append('profile-image', profileInput.files[0]);
+    } else {
+        formData.append('profile-image', null); 
     }
     
     const data = {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(obj)
+        body: formData
     }
 
     await fetch(`${BACKEND_IP_PORT}/users`, data)

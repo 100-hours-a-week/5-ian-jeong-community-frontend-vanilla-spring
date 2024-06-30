@@ -29,7 +29,7 @@ const userId = localStorage.getItem("user-id");
 
 
 let originNickname;
-let isCorrectNickname = false;
+let isCorrectNickname = true;
 
 
 
@@ -114,12 +114,25 @@ editBtn.addEventListener('click', async (event) => {
         setTimeout(async () => {
             editBtn.disabled = 'true';
 
-            const obj = {
-                nickname : nicknameInput.value,
-                image: preview.src
+            const formData = new FormData();
+            formData.append('nickname', nicknameInput.value);
+
+            if (profileImage.files.length > 0) {
+                formData.append('profile-image', profileImage.files[0]);
+            } else {
+                formData.append('profile-image', null); 
             }
-                
-            await fetch(`${BACKEND_IP_PORT}/users/${userId}`, createFetchOption('PATCH', obj))
+
+            const data = {
+                method: 'PATCH',
+                headers: {
+                    'user-id' : userId
+                },
+                body: formData,
+                credentials: 'include',
+            }
+            
+            await fetch(`${BACKEND_IP_PORT}/users/${userId}`, data)
                 .then(response => {
                     if (response.status === 401) {
                         alert("로그아웃 되었습니다 !");
@@ -168,13 +181,7 @@ modalCancel.addEventListener('click', (event) => {
 modalDelete.addEventListener('click', async (event) => {
     event.preventDefault()
     
-    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, {
-        method: 'DELETE', 
-        credentials: 'include', 
-        headers: {
-            'Authorization': accessToken,
-            'Content-Type': 'application/json'
-        }})
+    await fetch(`${BACKEND_IP_PORT}/users/${userId}`, createFetchOption('DELETE'))
         .then(response => {
             if (response.status === 204) {
                 alert('회원탈퇴 되었습니다 !');

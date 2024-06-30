@@ -93,8 +93,8 @@ async function init() {
                 const postLogBox = document.createElement('div');
                 postLogBox.classList.add('post-log-box');
                     
-                const like = document.createElement('div');
-                like.classList.add('like');
+                // const like = document.createElement('div');
+                // like.classList.add('like');
 
                 const comment = document.createElement('div');
                 comment.classList.add('comment');
@@ -125,7 +125,7 @@ async function init() {
                     postTitle.textContent = post.title;
                 }
 
-                like.textContent = `좋아요 ${makeShortNumber(post.likeCount)}`;
+                // like.textContent = `좋아요 ${makeShortNumber(post.likeCount)}`;
                 comment.textContent = `댓글 ${makeShortNumber(post.commentCount)}`;
                 hits.textContent = `조회수 ${makeShortNumber(post.viewCount)}`;
 
@@ -138,7 +138,7 @@ async function init() {
                         writer.textContent = userJson.result.nickname;
                     })
 
-                postLogBox.appendChild(like);
+                // postLogBox.appendChild(like);
                 postLogBox.appendChild(comment);
                 postLogBox.appendChild(hits);
                 postLogBox.appendChild(time);
@@ -173,8 +173,8 @@ async function init() {
                 const postLogBox = document.createElement('div');
                 postLogBox.classList.add('post-log-box');
                     
-                const like = document.createElement('div');
-                like.classList.add('like');
+                // const like = document.createElement('div');
+                // like.classList.add('like');
     
                 const comment = document.createElement('div');
                 comment.classList.add('comment');
@@ -205,13 +205,13 @@ async function init() {
                     postTitle.textContent = post.title;
                 }
     
-                like.textContent = `좋아요 ${makeShortNumber(post.likeCount)}`;
+                // like.textContent = `좋아요 ${makeShortNumber(post.likeCount)}`;
                 comment.textContent = `댓글 ${makeShortNumber(post.commentCount)}`;
                 hits.textContent = `조회수 ${makeShortNumber(post.viewCount)}`;
     
                 time.textContent = post.createdAt.replace('T', ' ');
                     
-                await fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
+                fetch(`${BACKEND_IP_PORT}/users/${post.userId}`, createFetchOption('GET'))
                     .then(response => {
                         if(response.status === 401) {
                             alert("로그아웃 되었습니다 !");
@@ -234,7 +234,7 @@ async function init() {
                         console.log(error);
                     });
     
-                postLogBox.appendChild(like);
+                // postLogBox.appendChild(like);
                 postLogBox.appendChild(comment);
                 postLogBox.appendChild(hits);
                 postLogBox.appendChild(time);

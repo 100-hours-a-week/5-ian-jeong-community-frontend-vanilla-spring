@@ -82,22 +82,37 @@ completeBtn.addEventListener("click", async (event) => {
     const title = titleInput.value;
     const post = postInput.value;
     const file = fileInput.value.split('\\').pop();
-    const image = postImage.src;
+    const image = fileInput.files[0];
 
     if (!title || !post) {
         helperText.textContent = "*제목, 내용을 모두 작성해주세요.";
         helperText.style.visibility = "visible";
 
     } else { 
-        const obj = {
-            userId : userId,
-            title: title,
-            content: post,
-            imageName: file,
-            image: image
+        completeBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('userId', userId);
+        formData.append('title', title);
+        formData.append('content', post);
+        formData.append('imageName', file);
+
+        if (fileInput.files.length > 0) {
+            formData.append('post-image', image);
+        } else {
+            formData.append('post-image', null); 
+        }
+
+        const data = {
+            method: 'POST',
+            headers: {
+                'user-id' : userId
+            },
+            body: formData,
+            credentials: 'include',
         }
     
-        await fetch(`${BACKEND_IP_PORT}/posts`, createFetchOption('POST', obj))
+        await fetch(`${BACKEND_IP_PORT}/posts`, data)
             .then(response => {
                 if (response.status === 401) {
                     alert("로그아웃 되었습니다 !");
@@ -115,7 +130,10 @@ completeBtn.addEventListener("click", async (event) => {
             })
             .catch(error => {
                 console.error('fetch error:', error);
-            });
+            })
+            .finally(() => {
+                completeBtn.disabled = false;
+            })
     }
 });
 
