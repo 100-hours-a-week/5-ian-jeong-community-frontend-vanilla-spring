@@ -10,8 +10,12 @@ import postRouter from './routes/postRouter.js';
 const app = express(); 
 const __dirname = path.resolve();
 
+const corsOptions = {
+    origin: 'https://main--storied-dolphin-620dbc.netlify.app',
+};
+
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.static(__dirname + "/public")); 
 
 
